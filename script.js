@@ -225,6 +225,20 @@ const categories = [
  ]}
 ];
 
+const HISTORY_KEY='thinkWinQuizHistoryV1';
+function readHistory(){try{const value=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');return Array.isArray(value)?value:[]}catch{return []}}
+function renderHistory(){const history=readHistory();const rounds=document.getElementById('statRounds');if(!rounds)return;
+ document.getElementById('statRounds').textContent=history.length;
+ document.getElementById('statPoints').textContent=history.reduce((sum,item)=>sum+(Number(item.score)||0),0).toLocaleString('ar-EG');
+ document.getElementById('statBest').textContent=(history.reduce((best,item)=>Math.max(best,Number(item.score)||0),0)).toLocaleString('ar-EG');
+ const list=document.getElementById('historyList');list.innerHTML='';document.getElementById('historyEmpty').hidden=history.length>0;
+ history.slice(0,5).forEach(item=>{const row=document.createElement('div');row.className='history-item';const details=document.createElement('div');const title=document.createElement('strong');title.textContent=(item.icon||'🏆')+' '+(item.category||'جولة');const date=document.createElement('small');date.textContent=new Date(item.date).toLocaleString('ar-EG');details.append(title,date);const scoreEl=document.createElement('span');scoreEl.className='history-score';scoreEl.textContent=Number(item.score||0).toLocaleString('ar-EG')+' نقطة';row.append(details,scoreEl);list.appendChild(row)});
+}
+function saveCompletedRound(){if(singleQuestionMode)return;const history=readHistory();history.unshift({category:activeCategory.name,icon:activeCategory.icon,score:score,total:roundQuestions.length,date:new Date().toISOString()});try{localStorage.setItem(HISTORY_KEY,JSON.stringify(history.slice(0,30)))}catch{showToast('تعذر حفظ النتيجة في هذا المتصفح.')}renderHistory()}
+function showToast(message){const toast=document.getElementById('toast');toast.textContent=message;toast.style.display='block';clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>toast.style.display='none',2600)}
+const clearHistoryBtn=document.getElementById('clearHistoryBtn');if(clearHistoryBtn)clearHistoryBtn.addEventListener('click',()=>{if(confirm('هل تريد مسح سجل الجولات المحفوظ على هذا الجهاز؟')){localStorage.removeItem(HISTORY_KEY);renderHistory();showToast('تم مسح سجل الجولات.')}});
+renderHistory();
+
 const categoryGrid=document.getElementById('categoryGrid');
 categories.forEach(c=>{
  const btn=document.createElement('button');btn.className='category';btn.style.setProperty('--accent',c.color);btn.style.setProperty('--tint',c.tint);
@@ -264,7 +278,7 @@ function chooseAnswer(index){if(answered)return;answered=true;const q=roundQuest
  if(index===q[2]){const pts=singleQuestionMode?100:questionIndex<10?100:questionIndex<20?200:300;score+=pts;document.getElementById('feedback').textContent=`إجابة صحيحة! +${pts} نقطة`;document.getElementById('feedback').style.color='#168447'}else{document.getElementById('feedback').textContent='إجابة غير صحيحة. الإجابة الصحيحة مميزة باللون الأخضر.';document.getElementById('feedback').style.color='#c13d3d'}
  document.getElementById('score').textContent=score;document.getElementById('nextBtn').disabled=false;document.getElementById('progress').style.width=((questionIndex+1)/roundQuestions.length*100)+'%'}
 function nextQuestion(){if(!answered)return;if(singleQuestionMode){closeQuiz();document.getElementById('wheelResult').textContent='لف العجلة مرة أخرى للحصول على سؤال جديد.';document.getElementById('wheelSection').scrollIntoView({behavior:'smooth',block:'center'});return;}if(questionIndex<roundQuestions.length-1){questionIndex++;renderQuestion()}else showResult()}
-function showResult(){document.getElementById('quizPlay').classList.add('hide');document.getElementById('quizResult').classList.remove('hide');document.getElementById('finalScore').textContent=score+' نقطة';document.getElementById('resultDetails').textContent=`أجبت عن ${roundQuestions.length} سؤال في فئة ${activeCategory.name}. ${singleQuestionMode?'قيمة السؤال 100 نقطة.':'الحد الأقصى لهذه الجولة 6,000 نقطة.'}`}
+function showResult(){saveCompletedRound();document.getElementById('quizPlay').classList.add('hide');document.getElementById('quizResult').classList.remove('hide');document.getElementById('finalScore').textContent=score+' نقطة';document.getElementById('resultDetails').textContent=`أجبت عن ${roundQuestions.length} سؤال في فئة ${activeCategory.name}. ${singleQuestionMode?'قيمة السؤال 100 نقطة.':'الحد الأقصى لهذه الجولة 6,000 نقطة.'}`}
 function replayCategory(){startQuiz(lastCategoryId)}
 function closeQuiz(){document.getElementById('quizBackdrop').classList.remove('show')}
 function quitQuiz(){if(confirm('هل تريد إنهاء الجولة والعودة للفئات؟'))closeQuiz()}
@@ -273,3 +287,6 @@ function hideRules(){document.getElementById('rulesBackdrop').classList.remove('
 document.getElementById('quizBackdrop').addEventListener('click',e=>{if(e.target.id==='quizBackdrop')closeQuiz()});
 document.getElementById('rulesBackdrop').addEventListener('click',e=>{if(e.target.id==='rulesBackdrop')hideRules()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeQuiz();hideRules()}});
+
+// Register the service worker only on secure contexts (HTTPS or localhost).
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(error=>console.warn('Service Worker registration failed:',error));});}
