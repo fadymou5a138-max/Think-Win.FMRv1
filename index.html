@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b2254">
+<title>مسابقة المعرفة الكبرى</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-icon">🏆</span><div>مسابقة المعرفة الكبرى<small>اختبر معلوماتك... واكتشف عالمك</small></div></div>
+  <nav class="nav">
+    <a href="#home">الرئيسية</a><a href="#categories">الفئات</a><a href="#about">عن المسابقة</a>
+    <button onclick="showRules()">القواعد</button><button class="gold" onclick="startRandom()">ابدأ المسابقة ▶</button>
+  </nav>
+</header>
+<section class="hero" id="home">
+ <div class="hero-inner">
+  <div class="trophy" aria-hidden="true">🏆</div>
+  <div class="hero-copy"><div class="eyebrow">مرحبًا بك في</div><h1>مسابقة المعرفة الكبرى</h1><p>7 فئات · 210 أسئلة · تحدّي واحد!</p><button class="primary" onclick="document.getElementById('categories').scrollIntoView({behavior:'smooth'})">ابدأ الآن　▶</button></div>
+  <div class="hero-side">معرفتك<span>هي قوتك!</span><div style="font-size:64px;margin-top:12px">💡</div></div>
+ </div>
+</section>
+<section class="wheel-section" id="wheelSection"><div class="wheel-card"><div class="wheel-copy"><div class="eyebrow" style="color:#45638f">🎯 اختار تحدّيك بطريقة ممتعة</div><h2>عجلة اختيار الفئات</h2><p>اضغط على زر «لف العجلة» واترك الحظ يختار فئة عشوائية. بمجرد أن تتوقف العجلة، ستبدأ الأسئلة من الفئة التي ظهرت لك مباشرة.</p><button class="primary wheel-btn" id="spinBtn" onclick="spinWheel()">🎡 لف العجلة</button><div class="wheel-result" id="wheelResult" aria-live="polite">مستعد؟ لف العجلة وابدأ التحدي!</div></div><div class="wheel-stage"><div class="wheel-pointer"></div><canvas id="categoryWheel" width="600" height="600" aria-label="عجلة اختيار فئة المسابقة"></canvas><div class="wheel-hub">🎯</div></div></div></section>
+<main>
+<section class="section" id="categories">
+ <h2 class="section-title">اختر الفئة التي تريد المشاركة فيها</h2>
+ <div class="categories" id="categoryGrid"></div>
+ <div class="info-grid" id="about">
+  <article class="info"><h3>⭐ نظام النقاط</h3><div class="points"><div class="point-row"><span>الأسئلة من 1 إلى 10</span><span>100 نقطة</span></div><div class="point-row"><span>الأسئلة من 11 إلى 20</span><span>200 نقطة</span></div><div class="point-row"><span>الأسئلة من 21 إلى 30</span><span>300 نقطة</span></div></div></article>
+  <article class="info"><h3>🏆 عدد الأسئلة في كل فئة</h3><div class="big-stat"><strong>30</strong><span>سؤالًا لكل فئة</span><hr style="border:0;border-top:1px solid #d9e6fb;margin:18px 0"><span>إجمالي أسئلة المسابقة</span><strong style="font-size:34px">210 سؤال</strong></div></article>
+  <article class="info"><h3>📘 عن المسابقة</h3><p>مسابقة المعرفة الكبرى تجربة ممتعة ومفيدة تهدف إلى تنمية الثقافة العامة واختبار المعلومات في مجالات مختلفة. تحتوي المسابقة على 7 فئات، وكل فئة تضم 30 سؤالًا بمستويات متدرجة من السهل إلى الصعب.</p><button class="secondary" style="margin-top:14px" onclick="showRules()">اقرأ القواعد　›</button></article>
+ </div>
+</section>
+</main>
+
+<footer class="footer">
+  <p> 2026 Think & Win.FMRv1</p>
+  <p>By : Fady Moussa Mozley FMR </p>
+</footer>
+
+
+<div class="modal-backdrop" id="quizBackdrop" role="dialog" aria-modal="true" aria-label="نافذة المسابقة">
+ <div class="modal">
+  <div class="modal-head"><h2 id="quizTitle">المسابقة</h2><button class="close" onclick="closeQuiz()" aria-label="إغلاق">×</button></div>
+  <div id="quizPlay">
+   <div class="progress-wrap"><div class="progress" id="progress"></div></div>
+   <div class="meta"><span id="questionCount">السؤال 1 من 30</span><span id="levelText">المستوى السهل · 100 نقطة</span><span>النقاط: <b id="score">0</b></span></div>
+   <div class="question" id="questionText"></div>
+   <div class="answers" id="answers"></div>
+   <div class="feedback" id="feedback" aria-live="polite"></div>
+   <div class="modal-actions"><button class="secondary" onclick="quitQuiz()">إنهاء الجولة</button><button class="primary" id="nextBtn" onclick="nextQuestion()" disabled>السؤال التالي ←</button></div>
+  </div>
+  <div id="quizResult" class="result hide"><div class="medal">🏆</div><h2>أحسنت! انتهت الجولة</h2><p>نتيجتك النهائية</p><strong id="finalScore">0</strong><p id="resultDetails"></p><button class="primary" onclick="replayCategory()">العب مرة أخرى</button> <button class="secondary" onclick="closeQuiz()">العودة للفئات</button></div>
+ </div>
+</div>
+<div class="modal-backdrop" id="rulesBackdrop" role="dialog" aria-modal="true" aria-label="قواعد المسابقة">
+ <div class="modal"><div class="modal-head"><h2>قواعد المسابقة</h2><button class="close" onclick="hideRules()">×</button></div>
+ <ul style="line-height:2.1;padding-right:24px"><li>اختر واحدة من الفئات السبع لبدء جولة من 30 سؤالًا.</li><li>الأسئلة 1–10 بقيمة 100 نقطة، و11–20 بقيمة 200 نقطة، و21–30 بقيمة 300 نقطة.</li><li>اختر إجابة واحدة لكل سؤال؛ تظهر الإجابة الصحيحة بعد الاختيار.</li><li>لا تُضاف النقاط إلا عند الإجابة الصحيحة.</li><li>هذه نسخة أولية قابلة للتطوير؛ يمكن تعديل الأسئلة والإجابات من داخل ملف HTML.</li></ul><div style="text-align:left"><button class="primary" onclick="hideRules()">فهمت</button></div></div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="script.js"></script>
+</body>
+</html>
